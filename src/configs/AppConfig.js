@@ -9,10 +9,10 @@ export const AUTH_PREFIX_PATH = '/auth';
 export const THEME_CONFIG = {
 	navCollapsed: false,
 	sideNavTheme: SIDE_NAV_LIGHT,
-	locale: 'en',
+	locale: 'ru',
 	navType: NAV_TYPE_SIDE,
 	topNavColor: '#3e82f7',
 	headerNavColor: '',
 	mobileNav: false,
-	currentTheme: 'dark'
+	currentTheme: 'light'
 };

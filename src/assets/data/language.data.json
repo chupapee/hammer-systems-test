@@ -5,6 +5,12 @@
         "icon": "us",
         "lang": "En"
     },
+	  {
+        "langName": "Russian",
+        "langId": "ru",
+        "icon": "ru",
+        "lang": "Ru"
+    },
     {
         "langName": "Chinese",
         "langId": "zh",
