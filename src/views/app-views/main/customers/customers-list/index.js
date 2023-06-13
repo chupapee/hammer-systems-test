@@ -1,127 +1,111 @@
 import React, { Component } from 'react';
-import { Card, Table, Tag, Tooltip, message, Button } from 'antd';
-import { EyeOutlined, DeleteOutlined } from '@ant-design/icons';
-import moment from 'moment';
-import CustomersView from "./CustomersView";
+import { Card, Table, Tooltip, message, Button, Spin } from 'antd';
+import { EyeOutlined, DeleteOutlined, UserOutlined } from '@ant-design/icons';
 import AvatarStatus from 'components/shared-components/AvatarStatus';
-import userData from 'assets/data/user-list.data.json';
+import { sort } from '../model/helpers/sort';
+import { withRouter } from 'react-router-dom';
 
 export class CustomersList extends Component {
-	state = {
-		customers: userData,
-		userProfileVisible: false,
-		selectedUser: null,
-	};
+  state = {
+    customers: this.props.customers,
+    isPending: this.props.isPending,
+    error: this.props.fetchError,
+  };
 
-	deleteUser = (userId) => {
-		this.setState({
-			customers: this.state.customers.filter((item) => item.id !== userId),
-		});
-		message.success({ content: `Deleted user ${userId}`, duration: 2 });
-	};
+  deleteCustomer = (customerId) => {
+    this.setState({
+      customers: this.state.customers.filter((item) => item.id !== customerId),
+    });
+    message.success({ content: `Deleted customer ${customerId}`, duration: 2 });
+  };
 
-	showUserProfile = (userInfo) => {
-		this.setState({
-			userProfileVisible: true,
-			selectedUser: userInfo,
-		});
-	};
+  showCustomerProfile = ( customerInfo ) => {
+    this.props.history.push(`/app/main/customers/edit-customer/${customerInfo.id}`, {id: customerInfo.id});
+  };
 
-	closeUserProfile = () => {
-		this.setState({
-			userProfileVisible: false,
-			selectedUser: null,
-		});
-	};
+  render() {
+    const { customers, isPending } = this.state;
 
-	render() {
-		const { customers, userProfileVisible, selectedUser } = this.state;
-
-		const tableColumns = [
-			{
-				title: 'User',
-				dataIndex: 'name',
-				render: (_, record) => (
-					<div className='d-flex'>
-						<AvatarStatus src={record.img} name={record.name} subTitle={record.email} />
-					</div>
-				),
-				sorter: {
-					compare: (a, b) => {
-						a = a.name.toLowerCase();
-						b = b.name.toLowerCase();
-						return a > b ? -1 : b > a ? 1 : 0;
-					},
-				},
-			},
-			{
-				title: 'Role',
-				dataIndex: 'role',
-				sorter: {
-					compare: (a, b) => a.role.length - b.role.length,
-				},
-			},
-			{
-				title: 'Last online',
-				dataIndex: 'lastOnline',
-				render: (date) => <span>{moment.unix(date).format('MM/DD/YYYY')} </span>,
-				sorter: (a, b) => moment(a.lastOnline).unix() - moment(b.lastOnline).unix(),
-			},
-			{
-				title: 'Status',
-				dataIndex: 'status',
-				render: (status) => (
-					<Tag className='text-capitalize' color={status === 'active' ? 'cyan' : 'red'}>
-						{status}
-					</Tag>
-				),
-				sorter: {
-					compare: (a, b) => a.status.length - b.status.length,
-				},
-			},
-			{
-				title: '',
-				dataIndex: 'actions',
-				render: (_, elm) => (
-					<div className='text-right'>
-						<Tooltip title='View'>
-							<Button
-								type='primary'
-								className='mr-2'
-								icon={<EyeOutlined />}
-								onClick={() => {
-									this.showUserProfile(elm);
-								}}
-								size='small'
-							/>
-						</Tooltip>
-						<Tooltip title='Delete'>
-							<Button
-								danger
-								icon={<DeleteOutlined />}
-								onClick={() => {
-									this.deleteUser(elm.id);
-								}}
-								size='small'
-							/>
-						</Tooltip>
-					</div>
-				),
-			},
-		];
-		return (
+    const tableColumns = [
+      {
+        title: "Customer",
+        dataIndex: "name",
+        render: (_, record) => (
+          <div className="d-flex">
+            <AvatarStatus
+              icon={<UserOutlined />}
+              name={record.name}
+              subTitle={record.email}
+            />
+          </div>
+        ),
+        sorter: {
+          compare: (a, b) => sort(a, b, "name"),
+        },
+      },
+      {
+        title: "Phone",
+        dataIndex: "phone",
+      },
+      {
+        title: "Website",
+        dataIndex: "website",
+        sorter: {
+          compare: (a, b) => sort(a, b, "website"),
+        },
+      },
+      {
+        title: "Company",
+        dataIndex: ["company", "name"],
+        sorter: {
+          compare: (a, b) => sort(a, b, 'company.name'),
+        },
+      },
+      {
+        title: "Address",
+        dataIndex: ["address", "street"],
+        sorter: {
+          compare: (a, b) => sort(a, b, "address.street"),
+        },
+      },
+      {
+        title: "",
+        dataIndex: "actions",
+        render: (_, elm) => (
+          <div className="text-right">
+            <Tooltip title="View">
+              <Button
+                type="primary"
+                className="mr-2"
+                icon={<EyeOutlined />}
+                onClick={() => {
+                  this.showCustomerProfile(elm);
+                }}
+                size="small"
+              />
+            </Tooltip>
+            <Tooltip title="Delete">
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => {
+                  this.deleteCustomer(elm.id);
+                }}
+                size="small"
+              />
+            </Tooltip>
+          </div>
+        ),
+      },
+    ];
+    return (
       <Card bodyStyle={{ padding: "0px" }}>
-        <Table columns={tableColumns} dataSource={customers} rowKey="id" />
-        <CustomersView
-          data={selectedUser}
-          visible={userProfileVisible}
-          close={() => {
-            this.closeUserProfile();
-          }}
-        />
+        <Spin spinning={isPending} tip='Loading'>
+          <Table columns={tableColumns} dataSource={customers} rowKey="id" />
+        </Spin>
       </Card>
     );
-	}
+  }
 }
 
-export default CustomersList;
+export default withRouter(CustomersList);
